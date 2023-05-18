@@ -7,8 +7,8 @@ from lcVisitor import lcVisitor
 
 @dataclass
 class Abstraccio:
-    esq: Arbre
-    dre: Arbre
+    var: Variable
+    expr: Arbre
 
 @dataclass
 class Aplicacio:
@@ -28,8 +28,7 @@ def to_string(a: Arbre) -> str:
         case Aplicacio(esquerra, dreta):
             return '(' + to_string(esquerra) + to_string(dreta) + ')'
         case Variable(var):
-            return var
-
+            return var            
 
 class TreeVisitor(lcVisitor):
 
