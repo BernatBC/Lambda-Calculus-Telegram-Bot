@@ -17,12 +17,12 @@ class Aplicacio:
 
 @dataclass
 class Variable:
-    variable: chr
+    var: chr
 
 Arbre = Abstraccio | Aplicacio | Variable
 
-def to_string(a: Arbre) -> str:
-    match a:
+def to_string(arbre: Arbre) -> str:
+    match arbre:
         case Abstraccio(variable, expressio):
             return '(λ' + str(to_string(variable)) + '.' + str(to_string(expressio)) + ')'
         case Aplicacio(esquerra, dreta):
@@ -39,34 +39,34 @@ def alpha_conversio(a: Arbre) -> Arbre:
         case Variable(var):
             return a
 
-def beta_reduccio(a: Arbre) -> Arbre:
-    match a:
+def beta_reduccio(arbre: Arbre) -> Arbre:
+    match arbre:
         case Abstraccio(variable, expressio):
             return Abstraccio(variable, beta_reduccio(expressio))
         case Aplicacio(esquerra, dreta):
             match esquerra:
                 case Abstraccio(variable, expressio):
                     print('β-reducció:')
-                    reduit = substitucio(expressio, dreta, str(variable.variable))
-                    print(to_string(a) + ' → ' + to_string(reduit))
+                    reduit = substitucio(expressio, dreta, str(variable.var))
+                    print(to_string(arbre) + ' → ' + to_string(reduit))
                     return reduit
-                case Aplicacio(esquerra2, dreta2):
+                case Aplicacio(_, _):
                     return Aplicacio(beta_reduccio(esquerra), beta_reduccio(dreta))
                 case Variable(_):
                     return Aplicacio(esquerra, beta_reduccio(dreta))
         case Variable(_):
-            return a
+            return arbre
 
-def substitucio(a: Arbre, b: Arbre, variable) -> Arbre:
-    match a:
-        case Abstraccio(esquerra, dreta):
-            return Abstraccio(esquerra, substitucio(dreta, b, variable))
+def substitucio(arbre: Arbre, substitut: Arbre, variable) -> Arbre:
+    match arbre:
+        case Abstraccio(var, expressio):
+            return Abstraccio(var, substitucio(expressio, substitut, variable))
         case Aplicacio(esquerra, dreta):
-            return Aplicacio(substitucio(esquerra, b, variable), substitucio(dreta, b, variable))
+            return Aplicacio(substitucio(esquerra, substitut, variable), substitucio(dreta, substitut, variable))
         case Variable(var):
             if var == variable:
-                return b
-            else: return a
+                return substitut
+            else: return arbre
 
 class TreeVisitor(lcVisitor):
 
@@ -103,15 +103,22 @@ tree = parser.root()
 
 if parser.getNumberOfSyntaxErrors() == 0:
     visitor = TreeVisitor()
-    a = visitor.visit(tree)
+    arbre = visitor.visit(tree)
     print('Arbre:')
-    print(to_string(a))
+    print(to_string(arbre))
+    original = arbre
     while True: 
-        b = beta_reduccio(a)
-        if len(to_string(b)) == len(to_string(a)): break
-        a = b
-    print('resultat:')
-    print(to_string(b))
+        beta_reduit = beta_reduccio(arbre)
+        if len(to_string(beta_reduit)) == len(to_string(original)):
+            print('Resultat:')
+            print('Nothing')
+            break
+        if len(to_string(beta_reduit)) == len(to_string(arbre)):
+            print('Resultat:')
+            print(to_string(beta_reduit))
+            break
+        arbre = beta_reduit
+
 else:
     print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
     print(tree.toStringTree(recog=parser))
