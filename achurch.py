@@ -5,22 +5,13 @@ from lcLexer import lcLexer
 from lcParser import lcParser
 from lcVisitor import lcVisitor
 
-
-class Buit:
-    pass
-
 @dataclass
-class Node:
+class Abstraccio:
     esq: Arbre
     dre: Arbre
 
 @dataclass
-class Abstraccio(Node):
-    esq: Arbre
-    dre: Arbre
-
-@dataclass
-class Aplicacio(Node):
+class Aplicacio:
     esq: Arbre
     dre: Arbre
 
@@ -28,7 +19,7 @@ class Aplicacio(Node):
 class Variable:
     variable: chr
 
-Arbre = Node | Variable
+Arbre = Abstraccio | Aplicacio | Variable
 
 def to_string(a: Arbre) -> str:
     match a:
@@ -46,7 +37,7 @@ class TreeVisitor(lcVisitor):
         return self.visitChildren(ctx)
 
     def visitParentesis(self, ctx:lcParser.ParentesisContext):
-        [_, terme, _] = list(ctx.getChildren())
+        terme = ctx.getChild(1)
         return self.visit(terme)
 
     def visitLletra(self, ctx:lcParser.LletraContext):
