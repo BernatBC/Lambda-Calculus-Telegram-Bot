@@ -41,19 +41,17 @@ def alpha_conversio(a: Arbre) -> Arbre:
 
 def beta_reduccio(a: Arbre) -> Arbre:
     match a:
-        case Abstraccio(_, expressio):
-            return beta_reduccio(expressio)
+        case Abstraccio(variable, expressio):
+            return Abstraccio(variable, beta_reduccio(expressio))
         case Aplicacio(esquerra, dreta):
             match esquerra:
                 case Abstraccio(variable, expressio):
                     print('β-reducció:')
                     reduit = substitucio(expressio, dreta, str(variable.variable))
-                    print(to_string(a) + '->' + to_string(reduit))
-                    return beta_reduccio(reduit)
+                    print(to_string(a) + ' → ' + to_string(reduit))
+                    return reduit
                 case Aplicacio(esquerra2, dreta2):
-                    x = beta_reduccio(esquerra2)
-                    y = beta_reduccio(dreta2)
-                    return Aplicacio(Aplicacio(x, y), beta_reduccio(dreta))
+                    return Aplicacio(beta_reduccio(esquerra), beta_reduccio(dreta))
                 case Variable(_):
                     return Aplicacio(esquerra, beta_reduccio(dreta))
         case Variable(_):
@@ -108,7 +106,10 @@ if parser.getNumberOfSyntaxErrors() == 0:
     a = visitor.visit(tree)
     print('Arbre:')
     print(to_string(a))
-    b = beta_reduccio(a)
+    while True: 
+        b = beta_reduccio(a)
+        if len(to_string(b)) == len(to_string(a)): break
+        a = b
     print('resultat:')
     print(to_string(b))
 else:
