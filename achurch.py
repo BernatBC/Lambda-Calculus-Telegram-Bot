@@ -30,14 +30,47 @@ def to_string(arbre: Arbre) -> str:
         case Variable(var):
             return var            
 
-def alpha_conversio(a: Arbre) -> Arbre:
+def get_free_variables(a: Arbre, bounded, free):
     match a:
-        case Abstraccio(esquerra, dreta):
-            return a
+        case Abstraccio(variable, expressio):
+            bounded.add(str(variable.var))
+            get_free_variables(expressio, bounded, free)
+            bounded.remove(str(variable.var))
+            return
         case Aplicacio(esquerra, dreta):
-            return a
+            get_free_variables(esquerra, bounded, free)
+            get_free_variables(dreta, bounded, free)
+            return
         case Variable(var):
-            return a
+            if var in bounded: return
+            free.add(var)
+            return
+
+def alpha_conversio(arbre: Arbre, used_vars, bounded_vars, dictionary) -> Arbre:
+    match arbre:
+        case Abstraccio(variable, expressio):
+            old_var = str(variable.var)
+            bounded_vars.append(old_var)
+            if old_var in used_vars:
+                new_var = assign_variable(used_vars)
+                variable = Variable(new_var)
+                dictionary[old_var] = new_var
+                print('α-conversió: ' + old_var + ' → ' + new_var)
+            abstracted = Abstraccio(variable, alpha_conversio(expressio, used_vars, bounded_vars, dictionary))
+            bounded_vars.remove(old_var)
+            return abstracted
+        case Aplicacio(esquerra, dreta):
+            return Aplicacio(alpha_conversio(esquerra, used_vars, bounded_vars, dictionary), alpha_conversio(dreta, used_vars, bounded_vars, dictionary))
+        case Variable(var):
+            if var in used_vars and var in bounded_vars:
+                var = dictionary[var]
+            return Variable(var)
+
+def assign_variable(used_vars):
+    for v in range(ord('a'),ord('z')+1):
+        if chr(v) in used_vars: continue
+        used_vars.add(chr(v))
+        return chr(v)
 
 def beta_reduccio(arbre: Arbre) -> Arbre:
     match arbre:
@@ -106,10 +139,16 @@ if parser.getNumberOfSyntaxErrors() == 0:
     arbre = visitor.visit(tree)
     print('Arbre:')
     print(to_string(arbre))
-    original = arbre
+
+    free = set()
+    get_free_variables(arbre,set(), free)
+    alpha_convertit = alpha_conversio(arbre, free, [], {})
+    # TODO: imprimir alpha-reduccio
+    print(to_string(arbre) + ' → ' + to_string(alpha_convertit))
+    arbre = alpha_convertit
     while True: 
         beta_reduit = beta_reduccio(arbre)
-        if len(to_string(beta_reduit)) == len(to_string(original)):
+        if len(to_string(beta_reduit)) == len(to_string(alpha_convertit)):
             print('Resultat:')
             print('Nothing')
             break
