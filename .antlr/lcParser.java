@@ -16,7 +16,7 @@ public class lcParser extends Parser {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, T__1=2, T__2=3, T__3=4, LLETRA=5, VAR=6, LAMBDA=7, WS=8;
+		T__0=1, T__1=2, T__2=3, EQ=4, LLETRA=5, VAR=6, LAMBDA=7, WS=8;
 	public static final int
 		RULE_root = 0, RULE_instruccio = 1, RULE_terme = 2;
 	private static String[] makeRuleNames() {
@@ -28,13 +28,13 @@ public class lcParser extends Parser {
 
 	private static String[] makeLiteralNames() {
 		return new String[] {
-			null, "'\u2261'", "'('", "')'", "'.'"
+			null, "'('", "')'", "'.'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, null, null, null, null, "LLETRA", "VAR", "LAMBDA", "WS"
+			null, null, null, null, "EQ", "LLETRA", "VAR", "LAMBDA", "WS"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -121,7 +121,7 @@ public class lcParser extends Parser {
 				setState(9); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__1) | (1L << LLETRA) | (1L << VAR) | (1L << LAMBDA))) != 0) );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__0) | (1L << LLETRA) | (1L << VAR) | (1L << LAMBDA))) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -148,6 +148,7 @@ public class lcParser extends Parser {
 	}
 	public static class AssignacioContext extends InstruccioContext {
 		public TerminalNode VAR() { return getToken(lcParser.VAR, 0); }
+		public TerminalNode EQ() { return getToken(lcParser.EQ, 0); }
 		public TermeContext terme() {
 			return getRuleContext(TermeContext.class,0);
 		}
@@ -174,7 +175,7 @@ public class lcParser extends Parser {
 				setState(11);
 				match(VAR);
 				setState(12);
-				match(T__0);
+				match(EQ);
 				setState(13);
 				terme(0);
 				}
@@ -265,18 +266,18 @@ public class lcParser extends Parser {
 			setState(32);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
-			case T__1:
+			case T__0:
 				{
 				_localctx = new ParentesisContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 
 				setState(18);
-				match(T__1);
+				match(T__0);
 				setState(19);
 				terme(0);
 				setState(20);
-				match(T__2);
+				match(T__1);
 				}
 				break;
 			case LAMBDA:
@@ -301,7 +302,7 @@ public class lcParser extends Parser {
 					_la = _input.LA(1);
 				} while ( _la==LLETRA );
 				setState(28);
-				match(T__3);
+				match(T__2);
 				setState(29);
 				terme(3);
 				}
@@ -384,11 +385,11 @@ public class lcParser extends Parser {
 		"\4\3\4\3\4\3\4\3\4\3\4\6\4\33\n\4\r\4\16\4\34\3\4\3\4\3\4\3\4\5\4#\n\4"+
 		"\3\4\3\4\7\4\'\n\4\f\4\16\4*\13\4\3\4\2\3\6\5\2\4\6\2\2\2/\2\t\3\2\2\2"+
 		"\4\21\3\2\2\2\6\"\3\2\2\2\b\n\5\4\3\2\t\b\3\2\2\2\n\13\3\2\2\2\13\t\3"+
-		"\2\2\2\13\f\3\2\2\2\f\3\3\2\2\2\r\16\7\b\2\2\16\17\7\3\2\2\17\22\5\6\4"+
+		"\2\2\2\13\f\3\2\2\2\f\3\3\2\2\2\r\16\7\b\2\2\16\17\7\6\2\2\17\22\5\6\4"+
 		"\2\20\22\5\6\4\2\21\r\3\2\2\2\21\20\3\2\2\2\22\5\3\2\2\2\23\24\b\4\1\2"+
-		"\24\25\7\4\2\2\25\26\5\6\4\2\26\27\7\5\2\2\27#\3\2\2\2\30\32\7\t\2\2\31"+
+		"\24\25\7\3\2\2\25\26\5\6\4\2\26\27\7\4\2\2\27#\3\2\2\2\30\32\7\t\2\2\31"+
 		"\33\7\7\2\2\32\31\3\2\2\2\33\34\3\2\2\2\34\32\3\2\2\2\34\35\3\2\2\2\35"+
-		"\36\3\2\2\2\36\37\7\6\2\2\37#\5\6\4\5 #\7\b\2\2!#\7\7\2\2\"\23\3\2\2\2"+
+		"\36\3\2\2\2\36\37\7\5\2\2\37#\5\6\4\5 #\7\b\2\2!#\7\7\2\2\"\23\3\2\2\2"+
 		"\"\30\3\2\2\2\" \3\2\2\2\"!\3\2\2\2#(\3\2\2\2$%\f\6\2\2%\'\5\6\4\7&$\3"+
 		"\2\2\2\'*\3\2\2\2(&\3\2\2\2()\3\2\2\2)\7\3\2\2\2*(\3\2\2\2\7\13\21\34"+
 		"\"(";

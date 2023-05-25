@@ -2,7 +2,7 @@ grammar lc;
 
 root : instruccio+ ;
 
-instruccio: VAR '≡' terme           # assignacio
+instruccio: VAR EQ terme           # assignacio
     | terme                         # expressio
     ;
 
@@ -13,9 +13,11 @@ terme :  '(' terme ')'              # parentesis
     | LLETRA                        # lletra
     ;
 
+EQ : '≡' | '=' ;
+
 LLETRA : [a-z] ;
 
-VAR : [A-Z] [A-Z,0-9]*;
+VAR : [A-Z] [A-Z,0-9]* ;
 
 LAMBDA : 'λ' | '\u005C' ;
 
