@@ -15,7 +15,7 @@ terme :  '(' terme ')'              # parentesis
 
 LLETRA : [a-z] ;
 
-VAR : [A-Z]+;
+VAR : [A-Z] [A-Z,0-9]*;
 
 LAMBDA : 'λ' | '\u005C' ;
 
