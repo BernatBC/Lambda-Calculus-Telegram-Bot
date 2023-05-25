@@ -34,13 +34,11 @@ def alpha(arbre:Arbre):
 
     used_vars = set()
     vars_dictionary = {}
+    convertit = False
 
     def get_free_variables(a: Arbre, bounded):
         match a:
-            case Abstraccio(variable, expressio):
-                bounded.add(str(variable.var))
-                get_free_variables(expressio, bounded)
-                bounded.remove(str(variable.var))
+            case Abstraccio(_, _):
                 return
             case Aplicacio(esquerra, dreta):
                 get_free_variables(esquerra, bounded)
@@ -52,6 +50,7 @@ def alpha(arbre:Arbre):
                 return
 
     def alpha_conversio(a: Arbre, bounded_vars) -> Arbre:
+        nonlocal convertit
         match a:
             case Abstraccio(variable, expressio):
                 old_var = str(variable.var)
@@ -60,6 +59,7 @@ def alpha(arbre:Arbre):
                     new_var = assign_variable()
                     variable = Variable(new_var)
                     vars_dictionary[old_var] = new_var
+                    convertit = True
                     print('α-conversió: ' + old_var + ' → ' + new_var)
                 abstracted = Abstraccio(variable, alpha_conversio(expressio, bounded_vars))
                 bounded_vars.remove(old_var)
@@ -67,8 +67,7 @@ def alpha(arbre:Arbre):
             case Aplicacio(esquerra, dreta):
                 return Aplicacio(alpha_conversio(esquerra, bounded_vars), alpha_conversio(dreta, bounded_vars))
             case Variable(var):
-                if var in used_vars and var in bounded_vars:
-                    var = vars_dictionary[var]
+                if var in used_vars and var in bounded_vars: var = vars_dictionary[var]
                 return Variable(var)
 
     def assign_variable():
@@ -80,7 +79,7 @@ def alpha(arbre:Arbre):
     get_free_variables(arbre,set())
     alpha_convertit = alpha_conversio(arbre, [])
     # TODO: imprimir alpha-reduccio
-    print(to_string(arbre) + ' → ' + to_string(alpha_convertit))
+    if convertit: print(to_string(arbre) + ' → ' + to_string(alpha_convertit))
     return alpha_convertit
 
 def beta_reduccio(arbre: Arbre) -> Arbre:
@@ -108,9 +107,8 @@ def substitucio(arbre: Arbre, substitut: Arbre, variable) -> Arbre:
         case Aplicacio(esquerra, dreta):
             return Aplicacio(substitucio(esquerra, substitut, variable), substitucio(dreta, substitut, variable))
         case Variable(var):
-            if var == variable:
-                return substitut
-            else: return arbre
+            if var == variable: return substitut
+            return arbre
 
 class TreeVisitor(lcVisitor):
 
@@ -130,8 +128,7 @@ class TreeVisitor(lcVisitor):
         lletra = ctx.getChild(ctx.getChildCount() - 3)
         n = Abstraccio(Variable(lletra), self.visit(terme))
         # traducció abstracció de múltiples paràmetres
-        for i in range(ctx.getChildCount() - 4, 0, -1):
-            n = Abstraccio(Variable(ctx.getChild(i)), n)
+        for i in range(ctx.getChildCount() - 4, 0, -1): n = Abstraccio(Variable(ctx.getChild(i)), n)
         return n
 
     def visitAplicacio(self, ctx:lcParser.AplicacioContext):
