@@ -21,6 +21,8 @@ class Variable:
 
 Arbre = Abstraccio | Aplicacio | Variable
 
+macros = {}
+
 def to_string(arbre: Arbre) -> str:
     match arbre:
         case Abstraccio(variable, expressio):
@@ -115,6 +117,15 @@ class TreeVisitor(lcVisitor):
     def visitRoot(self, ctx:lcParser.RootContext):
         return self.visitChildren(ctx)
 
+    def visitAssignacio(self, ctx:lcParser.AssignacioContext):
+        variable = str(ctx.getChild(0))
+        terme = ctx.getChild(2)
+        macros[variable] = self.visit(terme)
+        return True
+
+    def visitExpressio(self, ctx:lcParser.ExpressioContext):
+        return self.visitChildren(ctx)
+
     def visitParentesis(self, ctx:lcParser.ParentesisContext):
         terme = ctx.getChild(1)
         return self.visit(terme)
@@ -122,6 +133,10 @@ class TreeVisitor(lcVisitor):
     def visitLletra(self, ctx:lcParser.LletraContext):
         lletra = str(ctx.getChild(0))
         return Variable(lletra)
+
+    def visitVariable(self, ctx:lcParser.VariableContext):
+        variable = str(ctx.getChild(0))
+        return macros[variable]
 
     def visitAbstraccio(self, ctx:lcParser.AbstraccioContext):
         terme = ctx.getChild(ctx.getChildCount() - 1)
@@ -135,33 +150,36 @@ class TreeVisitor(lcVisitor):
         [terme1, terme2] = list(ctx.getChildren())
         return Aplicacio(self.visit(terme1), self.visit(terme2))
 
+while True:
+    input_stream = InputStream(input('? '))
+    lexer = lcLexer(input_stream)
+    token_stream = CommonTokenStream(lexer)
+    parser = lcParser(token_stream)
+    tree = parser.root()
 
-input_stream = InputStream(input('? '))
-lexer = lcLexer(input_stream)
-token_stream = CommonTokenStream(lexer)
-parser = lcParser(token_stream)
-tree = parser.root()
-
-if parser.getNumberOfSyntaxErrors() == 0:
-    visitor = TreeVisitor()
-    arbre = visitor.visit(tree)
-    print('Arbre:')
-    print(to_string(arbre))
-
-    alpha_convertit = alpha(arbre)
-    arbre = alpha_convertit
-    while True: 
-        beta_reduit = beta_reduccio(arbre)
-        if len(to_string(beta_reduit)) == len(to_string(alpha_convertit)):
-            print('Resultat:')
-            print('Nothing')
-            break
-        if len(to_string(beta_reduit)) == len(to_string(arbre)):
-            print('Resultat:')
-            print(to_string(beta_reduit))
-            break
-        arbre = beta_reduit
-
-else:
-    print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
-    print(tree.toStringTree(recog=parser))
+    if parser.getNumberOfSyntaxErrors() == 0:
+        visitor = TreeVisitor()
+        arbre = visitor.visit(tree)
+        match arbre:
+            case True:
+                for m in macros:
+                    print(m + '≡' + to_string(macros[m]))
+            case _:
+                print('Arbre:')
+                print(to_string(arbre))
+                alpha_convertit = alpha(arbre)
+                arbre = alpha_convertit
+                while True: 
+                    beta_reduit = beta_reduccio(arbre)
+                    if len(to_string(beta_reduit)) == len(to_string(alpha_convertit)):
+                        print('Resultat:')
+                        print('Nothing')
+                        break
+                    if len(to_string(beta_reduit)) == len(to_string(arbre)):
+                        print('Resultat:')
+                        print(to_string(beta_reduit))
+                        break
+                    arbre = beta_reduit
+    else:
+        print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
+        print(tree.toStringTree(recog=parser))

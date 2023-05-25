@@ -14,6 +14,16 @@ class lcVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by lcParser#assignacio.
+    def visitAssignacio(self, ctx:lcParser.AssignacioContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by lcParser#expressio.
+    def visitExpressio(self, ctx:lcParser.ExpressioContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by lcParser#parentesis.
     def visitParentesis(self, ctx:lcParser.ParentesisContext):
         return self.visitChildren(ctx)
@@ -21,6 +31,11 @@ class lcVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by lcParser#lletra.
     def visitLletra(self, ctx:lcParser.LletraContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by lcParser#variable.
+    def visitVariable(self, ctx:lcParser.VariableContext):
         return self.visitChildren(ctx)
 
 
