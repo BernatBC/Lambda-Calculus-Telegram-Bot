@@ -84,33 +84,52 @@ def alpha(arbre:Arbre):
     if convertit: print(to_string(arbre) + ' → ' + to_string(alpha_convertit))
     return alpha_convertit
 
-def beta_reduccio(arbre: Arbre) -> Arbre:
-    match arbre:
-        case Abstraccio(variable, expressio):
-            return Abstraccio(variable, beta_reduccio(expressio))
-        case Aplicacio(esquerra, dreta):
-            match esquerra:
-                case Abstraccio(variable, expressio):
-                    print('β-reducció:')
-                    reduit = substitucio(expressio, dreta, str(variable.var))
-                    print(to_string(arbre) + ' → ' + to_string(reduit))
-                    return reduit
-                case Aplicacio(_, _):
-                    return Aplicacio(beta_reduccio(esquerra), beta_reduccio(dreta))
-                case Variable(_):
-                    return Aplicacio(esquerra, beta_reduccio(dreta))
-        case Variable(_):
-            return arbre
+def beta(a: Arbre):
+    reduccio = False
+    #ultim_reduit = a
 
-def substitucio(arbre: Arbre, substitut: Arbre, variable) -> Arbre:
-    match arbre:
-        case Abstraccio(var, expressio):
-            return Abstraccio(var, substitucio(expressio, substitut, variable))
-        case Aplicacio(esquerra, dreta):
-            return Aplicacio(substitucio(esquerra, substitut, variable), substitucio(dreta, substitut, variable))
-        case Variable(var):
-            if var == variable: return substitut
-            return arbre
+    def beta_reduccio(arbre: Arbre) -> Arbre:
+        nonlocal reduccio
+        #nonlocal ultim_reduit
+        match arbre:
+            case Abstraccio(variable, expressio):
+                return Abstraccio(variable, beta_reduccio(expressio))
+            case Aplicacio(esquerra, dreta):
+                match esquerra:
+                    case Abstraccio(variable, expressio):
+                        print('β-reducció:')
+                        reduit = substitucio(expressio, dreta, str(variable.var))
+                        print(to_string(arbre) + ' → ' + to_string(reduit))
+                        reduccio = True
+                        #if len(to_string(reduit)) == len(to_string(ultim_reduit)): return Variable('Nothing')
+                        #ultim_reduit = reduit
+                        #return beta_reduccio(reduit)
+                        return reduit
+                    case Aplicacio(_, _):
+                        return Aplicacio(beta_reduccio(esquerra), beta_reduccio(dreta))
+                    case Variable(_):
+                        return Aplicacio(esquerra, beta_reduccio(dreta))
+            case Variable(_):
+                return arbre
+
+    def substitucio(arbre: Arbre, substitut: Arbre, variable) -> Arbre:
+        match arbre:
+            case Abstraccio(var, expressio):
+                return Abstraccio(var, substitucio(expressio, substitut, variable))
+            case Aplicacio(esquerra, dreta):
+                return Aplicacio(substitucio(esquerra, substitut, variable), substitucio(dreta, substitut, variable))
+            case Variable(var):
+                if var == variable: return substitut
+                return arbre
+
+    original = a
+    while True:
+        beta_reduit = beta_reduccio(a)
+        if (not reduccio): return original
+        if (len(to_string(beta_reduit)) == len(to_string(original))): return Variable('Nothing')
+        if (len(to_string(beta_reduit)) == len(to_string(a))): return beta_reduit
+        a = beta_reduit
+
 
 class TreeVisitor(lcVisitor):
 
@@ -168,18 +187,9 @@ while True:
                 print('Arbre:')
                 print(to_string(arbre))
                 alpha_convertit = alpha(arbre)
-                arbre = alpha_convertit
-                while True: 
-                    beta_reduit = beta_reduccio(arbre)
-                    if len(to_string(beta_reduit)) == len(to_string(alpha_convertit)):
-                        print('Resultat:')
-                        print('Nothing')
-                        break
-                    if len(to_string(beta_reduit)) == len(to_string(arbre)):
-                        print('Resultat:')
-                        print(to_string(beta_reduit))
-                        break
-                    arbre = beta_reduit
+                beta_reduit = beta(alpha_convertit)
+                print('Resultat:')
+                print(to_string(beta_reduit))
     else:
         print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
         print(tree.toStringTree(recog=parser))
