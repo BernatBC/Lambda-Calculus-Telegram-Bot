@@ -194,5 +194,5 @@ while True:
         else:
             print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
             print(tree.toStringTree(recog=parser))
-    except EOFError as e:
+    except EOFError:
         break
