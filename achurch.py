@@ -170,26 +170,29 @@ class TreeVisitor(lcVisitor):
         return Aplicacio(self.visit(terme1), self.visit(terme2))
 
 while True:
-    input_stream = InputStream(input('? '))
-    lexer = lcLexer(input_stream)
-    token_stream = CommonTokenStream(lexer)
-    parser = lcParser(token_stream)
-    tree = parser.root()
+    try:
+        input_stream = InputStream(input('? '))
+        lexer = lcLexer(input_stream)
+        token_stream = CommonTokenStream(lexer)
+        parser = lcParser(token_stream)
+        tree = parser.root()
 
-    if parser.getNumberOfSyntaxErrors() == 0:
-        visitor = TreeVisitor()
-        arbre = visitor.visit(tree)
-        match arbre:
-            case True:
-                for m in macros:
-                    print(m + '≡' + to_string(macros[m]))
-            case _:
-                print('Arbre:')
-                print(to_string(arbre))
-                alpha_convertit = alpha(arbre)
-                beta_reduit = beta(alpha_convertit)
-                print('Resultat:')
-                print(to_string(beta_reduit))
-    else:
-        print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
-        print(tree.toStringTree(recog=parser))
+        if parser.getNumberOfSyntaxErrors() == 0:
+            visitor = TreeVisitor()
+            arbre = visitor.visit(tree)
+            match arbre:
+                case True:
+                    for m in macros:
+                        print(m + '≡' + to_string(macros[m]))
+                case _:
+                    print('Arbre:')
+                    print(to_string(arbre))
+                    alpha_convertit = alpha(arbre)
+                    beta_reduit = beta(alpha_convertit)
+                    print('Resultat:')
+                    print(to_string(beta_reduit))
+        else:
+            print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
+            print(tree.toStringTree(recog=parser))
+    except EOFError as e:
+        break
