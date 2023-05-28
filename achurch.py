@@ -40,7 +40,10 @@ def alpha(arbre:Arbre):
 
     def get_free_variables(a: Arbre, bounded):
         match a:
-            case Abstraccio(_, _):
+            case Abstraccio(variable, expression):
+                bounded.add(str(variable.var))
+                get_free_variables(expression, bounded)
+                bounded.remove(str(variable.var))
                 return
             case Aplicacio(esquerra, dreta):
                 get_free_variables(esquerra, bounded)
