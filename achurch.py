@@ -34,69 +34,69 @@ def to_string(arbre: Arbre) -> str:
 
 def alpha(arbre:Arbre):
 
-    used_vars = set()
+    utilitzades = set()
 
     def variables_utilitzades(a: Arbre):
         match a:
             case Abstraccio(variable, expression):
                 variables_utilitzades(expression)
-                used_vars.add(str(variable.var))
+                utilitzades.add(str(variable.var))
             case Aplicacio(esquerra, dreta):
                 variables_utilitzades(esquerra)
                 variables_utilitzades(dreta)
             case Variable(var):
-                used_vars.add(var)
+                utilitzades.add(var)
 
-    def recorre_variables(a: Arbre, bounded):
+    def alpha_conversio(a: Arbre, parametres):
         match a:
             case Abstraccio(variable, expression):
-                bounded.add(str(variable.var))
-                (a2, lliures, lligades) = recorre_variables(expression, bounded)
+                parametres.add(str(variable.var))
+                (a2, lliures, lligades) = alpha_conversio(expression, parametres)
                 lligades.add(str(variable.var))
-                bounded.remove(str(variable.var))
+                parametres.remove(str(variable.var))
                 return (Abstraccio(variable, a2), lliures, lligades)
             case Aplicacio(esquerra, dreta):
-                (a1, lliures1, lligades1) = recorre_variables(esquerra, bounded)
-                (a2, lliures2, lligades2) = recorre_variables(dreta, bounded)
+                (esquerra, lliures1, lligades1) = alpha_conversio(esquerra, parametres)
+                (dreta, lliures2, lligades2) = alpha_conversio(dreta, parametres)
                 lliures = lliures1.union(lliures2)
                 lligades = lligades1.union(lligades2)
-                I = lligades.intersection(lliures)
-                for i in I:
-                    x = assign_variable()
-                    print('α-conversió: ' + i + ' → ' + x)
-                    convertit = alpha_conversio(a1, i, x)
-                    print(to_string(a1) + ' → ' + to_string(convertit))
-                    a1 = convertit
-                return (Aplicacio(a1, a2), lliures, lligades)
+                interseccio = lligades.intersection(lliures)
+                for i in interseccio:
+                    nova = assignar_variable()
+                    print('α-conversió: ' + i + ' → ' + nova)
+                    convertit = conversio(esquerra, i, nova)
+                    print(to_string(esquerra) + ' → ' + to_string(convertit))
+                    esquerra = convertit
+                return (Aplicacio(esquerra, dreta), lliures, lligades)
             case Variable(var):
                 lligades = set()
                 lliures = set()
-                if var in bounded: lligades.add(var)
+                if var in parametres: lligades.add(var)
                 else: lliures.add(var)
                 return (a, lliures, lligades)
     
-    def alpha_conversio(a: arbre, antic, nou):
+    def conversio(a: arbre, antiga, nova):
         match a:
             case Abstraccio(variable, expression):
-                exp_convertida = alpha_conversio(expression, antic, nou)
-                if (str(variable.var) == antic): return Abstraccio(Variable(nou), exp_convertida)
+                exp_convertida = conversio(expression, antiga, nova)
+                if (str(variable.var) == antiga): return Abstraccio(Variable(nova), exp_convertida)
                 return Abstraccio(variable, exp_convertida)
             case Aplicacio(esquerra, dreta):
-                esq = alpha_conversio(esquerra, antic, nou)
-                dre = alpha_conversio(dreta, antic, nou)
+                esq = conversio(esquerra, antiga, nova)
+                dre = conversio(dreta, antiga, nova)
                 return Abstraccio(esq, dre)
             case Variable(var):
-                if (var == antic): return Variable(nou)
+                if (var == antiga): return Variable(nova)
                 return a
 
-    def assign_variable():
+    def assignar_variable():
         for v in range(ord('a'),ord('z')+1):
-            if chr(v) in used_vars: continue
-            used_vars.add(chr(v))
+            if chr(v) in utilitzades: continue
+            utilitzades.add(chr(v))
             return chr(v)
 
     variables_utilitzades(arbre)
-    return recorre_variables(arbre, set())[0]
+    return alpha_conversio(arbre, set())[0]
 
 def beta(a: Arbre):
     reduccio = False
