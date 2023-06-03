@@ -181,6 +181,7 @@ class TreeVisitor(lcVisitor):
 
     def visitAplicacio(self, ctx:lcParser.AplicacioContext):
         [terme1, terme2] = list(ctx.getChildren())
+        if (str(ctx.getChild(1).getChild(0)) == '+'): return Aplicacio(self.visit(terme2), self.visit(terme1))
         return Aplicacio(self.visit(terme1), self.visit(terme2))
 
 while True:
