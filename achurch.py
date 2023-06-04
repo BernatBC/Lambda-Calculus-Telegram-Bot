@@ -50,11 +50,19 @@ def alpha(arbre:Arbre):
     def alpha_conversio(a: Arbre, parametres):
         match a:
             case Abstraccio(variable, expression):
-                parametres.add(str(variable.var))
+                v = str(variable.var)
+                if (v in parametres):
+                    nova = assignar_variable()
+                    print('α-conversió: ' + v + ' → ' + nova)
+                    convertit = conversio(expression, v, nova)
+                    print(to_string(expression) + ' → ' + to_string(convertit))
+                    v = nova
+                    expression = convertit
+                parametres.add(v)
                 (a2, lliures, lligades) = alpha_conversio(expression, parametres)
-                lligades.add(str(variable.var))
-                parametres.remove(str(variable.var))
-                return (Abstraccio(variable, a2), lliures, lligades)
+                lligades.add(v)
+                parametres.remove(v)
+                return (Abstraccio(Variable(v), a2), lliures, lligades)
             case Aplicacio(esquerra, dreta):
                 (esquerra, lliures1, lligades1) = alpha_conversio(esquerra, parametres)
                 (dreta, lliures2, lligades2) = alpha_conversio(dreta, parametres)
@@ -181,7 +189,7 @@ class TreeVisitor(lcVisitor):
 
     def visitAplicacio(self, ctx:lcParser.AplicacioContext):
         [terme1, terme2] = list(ctx.getChildren())
-        if (str(ctx.getChild(1).getChild(0)) == '+'): return Aplicacio(self.visit(terme2), self.visit(terme1))
+        if (len(str(ctx.getChild(1).getChild(0))) == 1 and not str(ctx.getChild(1).getChild(0)).isalnum): return Aplicacio(self.visit(terme2), self.visit(terme1))
         return Aplicacio(self.visit(terme1), self.visit(terme2))
 
 while True:
