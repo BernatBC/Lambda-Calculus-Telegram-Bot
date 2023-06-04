@@ -115,12 +115,10 @@ def alpha(arbre:Arbre):
     return alpha_conversio(arbre, set())[0]
 
 def beta(a: Arbre):
-    reduccio = False
-    #ultim_reduit = a
+    n_reduccions = 0
 
     def beta_reduccio(arbre: Arbre) -> Arbre:
-        nonlocal reduccio
-        #nonlocal ultim_reduit
+        nonlocal n_reduccions
         match arbre:
             case Abstraccio(variable, expressio):
                 return Abstraccio(variable, beta_reduccio(expressio))
@@ -130,10 +128,7 @@ def beta(a: Arbre):
                         print('β-reducció:')
                         reduit = substitucio(expressio, dreta, str(variable.var))
                         print(to_string(arbre) + ' → ' + to_string(reduit))
-                        reduccio = True
-                        #if len(to_string(reduit)) == len(to_string(ultim_reduit)): return Variable('Nothing')
-                        #ultim_reduit = reduit
-                        #return beta_reduccio(reduit)
+                        n_reduccions += 1
                         return reduit
                     case Aplicacio(_, _):
                         return Aplicacio(beta_reduccio(esquerra), beta_reduccio(dreta))
@@ -153,12 +148,13 @@ def beta(a: Arbre):
                 return arbre
 
     original = a
-    while True:
+    iterations = round(len(str(to_string(original)))/2)
+    for i in range(1,iterations):
         beta_reduit = beta_reduccio(a)
-        if (not reduccio): return original
-        if (len(to_string(beta_reduit)) == len(to_string(original))): return Variable('Nothing')
-        if (len(to_string(beta_reduit)) == len(to_string(a))): return beta_reduit
+        if (n_reduccions == 0): return original
+        if (i > n_reduccions): return beta_reduit
         a = beta_reduit
+    return Variable('Nothing')
 
 
 class TreeVisitor(lcVisitor):
@@ -197,7 +193,7 @@ class TreeVisitor(lcVisitor):
 
     def visitAplicacio(self, ctx:lcParser.AplicacioContext):
         [terme1, terme2] = list(ctx.getChildren())
-        x = str(ctx.getChild(1).getChild(0))
+        x = str(terme2.getChild(0))
         if (len(x) == 1 and not x.isalpha() and x != '(' and x != '\u005C' and x != 'λ'): 
             return Aplicacio(self.visit(terme2), self.visit(terme1))
         return Aplicacio(self.visit(terme1), self.visit(terme2))
