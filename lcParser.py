@@ -10,14 +10,14 @@ else:
 
 def serializedATN():
     return [
-        4,1,8,42,2,0,7,0,2,1,7,1,2,2,7,2,1,0,4,0,8,8,0,11,0,12,0,9,1,1,1,
+        4,1,9,42,2,0,7,0,2,1,7,1,2,2,7,2,1,0,4,0,8,8,0,11,0,12,0,9,1,1,1,
         1,1,1,1,1,3,1,16,8,1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,4,2,25,8,2,11,2,
         12,2,26,1,2,1,2,1,2,1,2,3,2,33,8,2,1,2,1,2,5,2,37,8,2,10,2,12,2,
         40,9,2,1,2,0,1,4,3,0,2,4,0,0,45,0,7,1,0,0,0,2,15,1,0,0,0,4,32,1,
         0,0,0,6,8,3,2,1,0,7,6,1,0,0,0,8,9,1,0,0,0,9,7,1,0,0,0,9,10,1,0,0,
         0,10,1,1,0,0,0,11,12,5,6,0,0,12,13,5,4,0,0,13,16,3,4,2,0,14,16,3,
         4,2,0,15,11,1,0,0,0,15,14,1,0,0,0,16,3,1,0,0,0,17,18,6,2,-1,0,18,
-        19,5,1,0,0,19,20,3,4,2,0,20,21,5,2,0,0,21,33,1,0,0,0,22,24,5,7,0,
+        19,5,1,0,0,19,20,3,4,2,0,20,21,5,2,0,0,21,33,1,0,0,0,22,24,5,8,0,
         0,23,25,5,5,0,0,24,23,1,0,0,0,25,26,1,0,0,0,26,24,1,0,0,0,26,27,
         1,0,0,0,27,28,1,0,0,0,28,29,5,3,0,0,29,33,3,4,2,3,30,33,5,6,0,0,
         31,33,5,5,0,0,32,17,1,0,0,0,32,22,1,0,0,0,32,30,1,0,0,0,32,31,1,
@@ -39,7 +39,7 @@ class lcParser ( Parser ):
     literalNames = [ "<INVALID>", "'('", "')'", "'.'" ]
 
     symbolicNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                      "EQ", "LLETRA", "VAR", "LAMBDA", "WS" ]
+                      "EQ", "LLETRA", "VAR", "SYMBOL", "LAMBDA", "WS" ]
 
     RULE_root = 0
     RULE_instruccio = 1
@@ -54,8 +54,9 @@ class lcParser ( Parser ):
     EQ=4
     LLETRA=5
     VAR=6
-    LAMBDA=7
-    WS=8
+    SYMBOL=7
+    LAMBDA=8
+    WS=9
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -108,7 +109,7 @@ class lcParser ( Parser ):
                 self.state = 9 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & 226) != 0)):
+                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & 354) != 0)):
                     break
 
         except RecognitionException as re:
@@ -347,7 +348,7 @@ class lcParser ( Parser ):
                 self.state = 20
                 self.match(lcParser.T__1)
                 pass
-            elif token in [7]:
+            elif token in [8]:
                 localctx = lcParser.AbstraccioContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx

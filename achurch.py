@@ -75,6 +75,14 @@ def alpha(arbre:Arbre):
                     convertit = conversio(esquerra, i, nova)
                     print(to_string(esquerra) + ' → ' + to_string(convertit))
                     esquerra = convertit
+                #interseccio2 = lligades1.intersection(lligades2)
+                #for i in interseccio2:
+                    #if i in parametres: continue
+                    #nova = assignar_variable()
+                    #print('α-conversió: ' + i + ' → ' + nova)
+                    #convertit = conversio(esquerra, i, nova)
+                    #print(to_string(esquerra) + ' → ' + to_string(convertit))
+                    #esquerra = convertit
                 return (Aplicacio(esquerra, dreta), lliures, lligades)
             case Variable(var):
                 lligades = set()
@@ -189,7 +197,9 @@ class TreeVisitor(lcVisitor):
 
     def visitAplicacio(self, ctx:lcParser.AplicacioContext):
         [terme1, terme2] = list(ctx.getChildren())
-        if (len(str(ctx.getChild(1).getChild(0))) == 1 and not str(ctx.getChild(1).getChild(0)).isalnum): return Aplicacio(self.visit(terme2), self.visit(terme1))
+        x = str(ctx.getChild(1).getChild(0))
+        if (len(x) == 1 and not x.isalpha() and x != '('): 
+            return Aplicacio(self.visit(terme2), self.visit(terme1))
         return Aplicacio(self.visit(terme1), self.visit(terme2))
 
 while True:
