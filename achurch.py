@@ -55,7 +55,7 @@ def alpha(arbre:Arbre):
                     nova = assignar_variable()
                     print('α-conversió: ' + v + ' → ' + nova)
                     convertit = conversio(expression, v, nova)
-                    print(to_string(expression) + ' → ' + to_string(convertit))
+                    print(to_string(Abstraccio(Variable(v), expression)) + ' → ' + to_string(Abstraccio(Variable(nova), convertit)))
                     v = nova
                     expression = convertit
                 parametres.add(v)
