@@ -75,14 +75,14 @@ def alpha(arbre:Arbre):
                     convertit = conversio(esquerra, i, nova)
                     print(to_string(esquerra) + ' → ' + to_string(convertit))
                     esquerra = convertit
-                #interseccio2 = lligades1.intersection(lligades2)
-                #for i in interseccio2:
-                    #if i in parametres: continue
-                    #nova = assignar_variable()
-                    #print('α-conversió: ' + i + ' → ' + nova)
-                    #convertit = conversio(esquerra, i, nova)
-                    #print(to_string(esquerra) + ' → ' + to_string(convertit))
-                    #esquerra = convertit
+                interseccio2 = lligades1.intersection(lligades2)
+                for i in interseccio2:
+                    if i in parametres: continue
+                    nova = assignar_variable()
+                    print('α-conversió: ' + i + ' → ' + nova)
+                    convertit = conversio(esquerra, i, nova)
+                    print(to_string(esquerra) + ' → ' + to_string(convertit))
+                    esquerra = convertit
                 return (Aplicacio(esquerra, dreta), lliures, lligades)
             case Variable(var):
                 lligades = set()
@@ -100,7 +100,7 @@ def alpha(arbre:Arbre):
             case Aplicacio(esquerra, dreta):
                 esq = conversio(esquerra, antiga, nova)
                 dre = conversio(dreta, antiga, nova)
-                return Abstraccio(esq, dre)
+                return Aplicacio(esq, dre)
             case Variable(var):
                 if (var == antiga): return Variable(nova)
                 return a
@@ -198,7 +198,7 @@ class TreeVisitor(lcVisitor):
     def visitAplicacio(self, ctx:lcParser.AplicacioContext):
         [terme1, terme2] = list(ctx.getChildren())
         x = str(ctx.getChild(1).getChild(0))
-        if (len(x) == 1 and not x.isalpha() and x != '('): 
+        if (len(x) == 1 and not x.isalpha() and x != '(' and x != '\u005C' and x != 'λ'): 
             return Aplicacio(self.visit(terme2), self.visit(terme1))
         return Aplicacio(self.visit(terme1), self.visit(terme2))
 
