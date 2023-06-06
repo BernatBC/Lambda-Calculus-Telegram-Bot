@@ -4,6 +4,7 @@ from antlr4 import *
 from lcLexer import lcLexer
 from lcParser import lcParser
 from lcVisitor import lcVisitor
+import math
 
 @dataclass
 class Abstraccio:
@@ -21,8 +22,10 @@ class Variable:
 
 Arbre = Abstraccio | Aplicacio | Variable
 
+# Diccionari que emmagatzema els arbres de cada macro. Clau: Nom de la macro, Valor: Arbre de la macro
 macros = {}
 
+# Retorna l'arbre en format de string
 def to_string(arbre: Arbre) -> str:
     match arbre:
         case Abstraccio(variable, expressio):
@@ -32,10 +35,13 @@ def to_string(arbre: Arbre) -> str:
         case Variable(var):
             return var            
 
-def alpha(arbre:Arbre):
+# Retrona l'arbre després d'aplicar les alpha-conversions
+def alpha(arbre: Arbre):
 
+    # Conjunt que emmagatzema els noms de totes les variables que apareixen a l'arbre abans d'aplicar l'alpha-conversió
     utilitzades = set()
 
+    # Mètode que afageix al conjunt "utilitzades" les variables que apareixen a l'arbre abans d'aplicar l'alpha-conversió
     def variables_utilitzades(a: Arbre):
         match a:
             case Abstraccio(variable, expression):
@@ -47,10 +53,12 @@ def alpha(arbre:Arbre):
             case Variable(var):
                 utilitzades.add(var)
 
+    # Mètode que fa les alpha-conversions
     def alpha_conversio(a: Arbre, parametres):
         match a:
             case Abstraccio(variable, expression):
                 v = str(variable.var)
+                # alpha-conversió λx.λx.x → λx.λa.a
                 if (v in parametres):
                     nova = assignar_variable()
                     print('α-conversió: ' + v + ' → ' + nova)
@@ -64,6 +72,7 @@ def alpha(arbre:Arbre):
                 parametres.remove(v)
                 return (Abstraccio(Variable(v), a2), lliures, lligades)
             case Aplicacio(esquerra, dreta):
+                # alpha-conversió conflicte variable lligada i variable lliure
                 (esquerra, lliures1, lligades1) = alpha_conversio(esquerra, parametres)
                 (dreta, lliures2, lligades2) = alpha_conversio(dreta, parametres)
                 lliures = lliures1.union(lliures2)
@@ -75,9 +84,11 @@ def alpha(arbre:Arbre):
                     convertit = conversio(esquerra, i, nova)
                     print(to_string(esquerra) + ' → ' + to_string(convertit))
                     esquerra = convertit
+                # alpha-conversió prevenir possible conflicte després de beta-reducció
                 interseccio2 = lligades1.intersection(lligades2)
                 for i in interseccio2:
-                    if i in parametres: continue
+                    if i in parametres:
+                        continue
                     nova = assignar_variable()
                     print('α-conversió: ' + i + ' → ' + nova)
                     convertit = conversio(esquerra, i, nova)
@@ -87,36 +98,47 @@ def alpha(arbre:Arbre):
             case Variable(var):
                 lligades = set()
                 lliures = set()
-                if var in parametres: lligades.add(var)
-                else: lliures.add(var)
+                if var in parametres:
+                    lligades.add(var)
+                else:
+                    lliures.add(var)
                 return (a, lliures, lligades)
     
+    # Substitueix els noms de les variables d'antiga a nove del arbre
     def conversio(a: arbre, antiga, nova):
         match a:
             case Abstraccio(variable, expression):
                 exp_convertida = conversio(expression, antiga, nova)
-                if (str(variable.var) == antiga): return Abstraccio(Variable(nova), exp_convertida)
+                if (str(variable.var) == antiga):
+                    return Abstraccio(Variable(nova), exp_convertida)
                 return Abstraccio(variable, exp_convertida)
             case Aplicacio(esquerra, dreta):
                 esq = conversio(esquerra, antiga, nova)
                 dre = conversio(dreta, antiga, nova)
                 return Aplicacio(esq, dre)
             case Variable(var):
-                if (var == antiga): return Variable(nova)
+                if (var == antiga):
+                    return Variable(nova)
                 return a
 
+    # Retorna un nom de variable sense utilitzar, i el marca com a utilitzada
     def assignar_variable():
         for v in range(ord('a'),ord('z')+1):
-            if chr(v) in utilitzades: continue
+            if chr(v) in utilitzades:
+                continue
             utilitzades.add(chr(v))
             return chr(v)
 
     variables_utilitzades(arbre)
     return alpha_conversio(arbre, set())[0]
 
+# Retrona l'arbre després d'aplicar una alpha-conversió
 def beta(a: Arbre):
+
+    # Compta el nombre de beta-reduccions fetes
     n_reduccions = 0
 
+    # Mètode que aplica una beta-reducció (o cap si no n'hi ha cap de possible)
     def beta_reduccio(arbre: Arbre) -> Arbre:
         nonlocal n_reduccions
         match arbre:
@@ -137,6 +159,7 @@ def beta(a: Arbre):
             case Variable(_):
                 return arbre
 
+    # Aplica la substitució d'una beta-reducció
     def substitucio(arbre: Arbre, substitut: Arbre, variable) -> Arbre:
         match arbre:
             case Abstraccio(var, expressio):
@@ -144,19 +167,23 @@ def beta(a: Arbre):
             case Aplicacio(esquerra, dreta):
                 return Aplicacio(substitucio(esquerra, substitut, variable), substitucio(dreta, substitut, variable))
             case Variable(var):
-                if var == variable: return substitut
+                if var == variable:
+                    return substitut
                 return arbre
 
+    # Bucle que fa les betes-reduccions possibles mentres no es superi un nombre determinat 
     original = a
-    iterations = round(len(str(to_string(original)))/2)
-    for i in range(1,iterations):
+    iterations = math.ceil(len(str(to_string(original)))/2)
+    for i in range(0,iterations):
         beta_reduit = beta_reduccio(a)
-        if (n_reduccions == 0): return original
-        if (i > n_reduccions): return beta_reduit
+        if (n_reduccions == 0):
+            return original
+        if (i > n_reduccions):
+            return beta_reduit
         a = beta_reduit
     return Variable('Nothing')
 
-
+# Visitador de la gramàtica
 class TreeVisitor(lcVisitor):
 
     def visitRoot(self, ctx:lcParser.RootContext):
@@ -194,6 +221,7 @@ class TreeVisitor(lcVisitor):
     def visitAplicacio(self, ctx:lcParser.AplicacioContext):
         [terme1, terme2] = list(ctx.getChildren())
         x = str(terme2.getChild(0))
+        # En el cas que es detecti una macro en notació infixa, convertir-la en notació prefixa
         if (len(x) == 1 and not x.isalpha() and x != '(' and x != '\u005C' and x != 'λ'): 
             return Aplicacio(self.visit(terme2), self.visit(terme1))
         return Aplicacio(self.visit(terme1), self.visit(terme2))
@@ -212,7 +240,7 @@ while True:
             match arbre:
                 case True:
                     for m in macros:
-                        print(m + '≡' + to_string(macros[m]))
+                        print(m + ' ≡ ' + to_string(macros[m]))
                 case _:
                     print('Arbre:')
                     print(to_string(arbre))
