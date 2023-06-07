@@ -4,6 +4,9 @@ from antlr4 import *
 from lcLexer import lcLexer
 from lcParser import lcParser
 from lcVisitor import lcVisitor
+
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, filters, MessageHandler
 import math
 
 @dataclass
@@ -226,30 +229,51 @@ class TreeVisitor(lcVisitor):
             return Aplicacio(self.visit(terme2), self.visit(terme1))
         return Aplicacio(self.visit(terme1), self.visit(terme2))
 
-while True:
-    try:
-        input_stream = InputStream(input('? '))
-        lexer = lcLexer(input_stream)
-        token_stream = CommonTokenStream(lexer)
-        parser = lcParser(token_stream)
-        tree = parser.root()
 
-        if parser.getNumberOfSyntaxErrors() == 0:
-            visitor = TreeVisitor()
-            arbre = visitor.visit(tree)
-            match arbre:
-                case True:
-                    for m in macros:
-                        print(m + ' ≡ ' + to_string(macros[m]))
-                case _:
-                    print('Arbre:')
-                    print(to_string(arbre))
-                    alpha_convertit = alpha(arbre)
-                    beta_reduit = beta(alpha_convertit)
-                    print('Resultat:')
-                    print(to_string(beta_reduit))
-        else:
-            print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
-            print(tree.toStringTree(recog=parser))
-    except (EOFError, KeyboardInterrupt):
-        break
+def tracta_expressio(expressio):
+    input_stream = InputStream(expressio)
+    lexer = lcLexer(input_stream)
+    token_stream = CommonTokenStream(lexer)
+    parser = lcParser(token_stream)
+    tree = parser.root()
+
+    if parser.getNumberOfSyntaxErrors() == 0:
+        visitor = TreeVisitor()
+        arbre = visitor.visit(tree)
+        match arbre:
+            case True:
+                for m in macros:
+                    print(m + ' ≡ ' + to_string(macros[m]))
+            case _:
+                print('Arbre:')
+                print(to_string(arbre))
+                alpha_convertit = alpha(arbre)
+                beta_reduit = beta(alpha_convertit)
+                print('Resultat:')
+                print(to_string(beta_reduit))
+    else:
+        print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
+        print(tree.toStringTree(recog=parser))
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text(f'Hello {update.effective_user.first_name}')
+
+async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text('/start\n/author\n/help\n/macros\nλ-calculus expression')
+
+async def author(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text('λ-Calculus Bot\nBernat Borràs Civil, 2023\nTelegram/GitHub: @BernatBC')
+
+async def defauting(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    tracta_expressio(update.message.text)
+
+TOKEN = open('token.txt').read().strip()
+
+app = ApplicationBuilder().token(TOKEN).build()
+
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("help", help))
+app.add_handler(CommandHandler("author", author))
+app.add_handler(MessageHandler(callback=defauting, filters=filters.TEXT))
+
+app.run_polling()
