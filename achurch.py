@@ -267,6 +267,12 @@ async def author(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def defauting(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     tracta_expressio(update.message.text)
 
+async def llista_macros(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    message = ''
+    for m in macros:
+        message = message + '\n' + m + ' ≡ ' + to_string(macros[m])
+    await update.message.reply_text(message)
+
 TOKEN = open('token.txt').read().strip()
 
 app = ApplicationBuilder().token(TOKEN).build()
@@ -274,6 +280,7 @@ app = ApplicationBuilder().token(TOKEN).build()
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("help", help))
 app.add_handler(CommandHandler("author", author))
+app.add_handler(CommandHandler("macros", llista_macros))
 app.add_handler(MessageHandler(callback=defauting, filters=filters.TEXT))
 
 app.run_polling()
