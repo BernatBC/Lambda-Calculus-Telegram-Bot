@@ -28,6 +28,8 @@ Arbre = Abstraccio | Aplicacio | Variable
 # Diccionari que emmagatzema els arbres de cada macro. Clau: Nom de la macro, Valor: Arbre de la macro
 macros = {}
 
+steps = []
+
 # Retorna l'arbre en format de string
 def to_string(arbre: Arbre) -> str:
     match arbre:
@@ -64,9 +66,8 @@ def alpha(arbre: Arbre):
                 # alpha-conversió λx.λx.x → λx.λa.a
                 if (v in parametres):
                     nova = assignar_variable()
-                    print('α-conversió: ' + v + ' → ' + nova)
                     convertit = conversio(expression, v, nova)
-                    print(to_string(Abstraccio(Variable(v), expression)) + ' → ' + to_string(Abstraccio(Variable(nova), convertit)))
+                    steps.append(to_string(Abstraccio(Variable(v), expression)) + ' → β → ' + to_string(Abstraccio(Variable(nova), convertit)))
                     v = nova
                     expression = convertit
                 parametres.add(v)
@@ -83,9 +84,8 @@ def alpha(arbre: Arbre):
                 interseccio = lligades.intersection(lliures)
                 for i in interseccio:
                     nova = assignar_variable()
-                    print('α-conversió: ' + i + ' → ' + nova)
                     convertit = conversio(esquerra, i, nova)
-                    print(to_string(esquerra) + ' → ' + to_string(convertit))
+                    steps.append(to_string(esquerra) + ' → β → ' + to_string(convertit))
                     esquerra = convertit
                 # alpha-conversió prevenir possible conflicte després de beta-reducció
                 interseccio2 = lligades1.intersection(lligades2)
@@ -93,9 +93,8 @@ def alpha(arbre: Arbre):
                     if i in parametres:
                         continue
                     nova = assignar_variable()
-                    print('α-conversió: ' + i + ' → ' + nova)
                     convertit = conversio(esquerra, i, nova)
-                    print(to_string(esquerra) + ' → ' + to_string(convertit))
+                    steps.append(to_string(esquerra) + ' → β → ' + to_string(convertit))
                     esquerra = convertit
                 return (Aplicacio(esquerra, dreta), lliures, lligades)
             case Variable(var):
@@ -150,9 +149,8 @@ def beta(a: Arbre):
             case Aplicacio(esquerra, dreta):
                 match esquerra:
                     case Abstraccio(variable, expressio):
-                        print('β-reducció:')
                         reduit = substitucio(expressio, dreta, str(variable.var))
-                        print(to_string(arbre) + ' → ' + to_string(reduit))
+                        steps.append(to_string(arbre) + ' → β → ' + to_string(reduit))
                         n_reduccions += 1
                         return reduit
                     case Aplicacio(_, _):
@@ -229,9 +227,17 @@ class TreeVisitor(lcVisitor):
             return Aplicacio(self.visit(terme2), self.visit(terme1))
         return Aplicacio(self.visit(terme1), self.visit(terme2))
 
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text(f'Hello {update.effective_user.first_name}')
 
-def tracta_expressio(expressio):
-    input_stream = InputStream(expressio)
+async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text('/start\n/author\n/help\n/macros\nλ-calculus expression')
+
+async def author(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text('λ-Calculus Bot\nBernat Borràs Civil, 2023\nTelegram/GitHub: @BernatBC')
+
+async def tracta_expressio(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    input_stream = InputStream(update.message.text)
     lexer = lcLexer(input_stream)
     token_stream = CommonTokenStream(lexer)
     parser = lcParser(token_stream)
@@ -242,30 +248,18 @@ def tracta_expressio(expressio):
         arbre = visitor.visit(tree)
         match arbre:
             case True:
-                for m in macros:
-                    print(m + ' ≡ ' + to_string(macros[m]))
+                return
             case _:
-                print('Arbre:')
-                print(to_string(arbre))
+                await update.message.reply_text(to_string(arbre))
                 alpha_convertit = alpha(arbre)
                 beta_reduit = beta(alpha_convertit)
-                print('Resultat:')
-                print(to_string(beta_reduit))
+                for s in steps:
+                    await update.message.reply_text(s)
+                await update.message.reply_text(to_string(beta_reduit))
+                steps.clear()
     else:
         print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
         print(tree.toStringTree(recog=parser))
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text(f'Hello {update.effective_user.first_name}')
-
-async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text('/start\n/author\n/help\n/macros\nλ-calculus expression')
-
-async def author(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text('λ-Calculus Bot\nBernat Borràs Civil, 2023\nTelegram/GitHub: @BernatBC')
-
-async def defauting(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    tracta_expressio(update.message.text)
 
 async def llista_macros(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     message = ''
@@ -281,6 +275,6 @@ app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("help", help))
 app.add_handler(CommandHandler("author", author))
 app.add_handler(CommandHandler("macros", llista_macros))
-app.add_handler(MessageHandler(callback=defauting, filters=filters.TEXT))
+app.add_handler(MessageHandler(filters.TEXT, tracta_expressio))
 
 app.run_polling()
