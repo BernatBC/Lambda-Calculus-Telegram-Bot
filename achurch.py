@@ -8,6 +8,7 @@ from lcVisitor import lcVisitor
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, filters, MessageHandler
 import math
+import pydot
 
 @dataclass
 class Abstraccio:
@@ -67,7 +68,7 @@ def alpha(arbre: Arbre):
                 if (v in parametres):
                     nova = assignar_variable()
                     convertit = conversio(expression, v, nova)
-                    steps.append(to_string(Abstraccio(Variable(v), expression)) + ' → β → ' + to_string(Abstraccio(Variable(nova), convertit)))
+                    steps.append(to_string(Abstraccio(Variable(v), expression)) + ' → α → ' + to_string(Abstraccio(Variable(nova), convertit)))
                     v = nova
                     expression = convertit
                 parametres.add(v)
@@ -85,7 +86,7 @@ def alpha(arbre: Arbre):
                 for i in interseccio:
                     nova = assignar_variable()
                     convertit = conversio(esquerra, i, nova)
-                    steps.append(to_string(esquerra) + ' → β → ' + to_string(convertit))
+                    steps.append(to_string(esquerra) + ' → α → ' + to_string(convertit))
                     esquerra = convertit
                 # alpha-conversió prevenir possible conflicte després de beta-reducció
                 interseccio2 = lligades1.intersection(lligades2)
@@ -94,7 +95,7 @@ def alpha(arbre: Arbre):
                         continue
                     nova = assignar_variable()
                     convertit = conversio(esquerra, i, nova)
-                    steps.append(to_string(esquerra) + ' → β → ' + to_string(convertit))
+                    steps.append(to_string(esquerra) + ' → α → ' + to_string(convertit))
                     esquerra = convertit
                 return (Aplicacio(esquerra, dreta), lliures, lligades)
             case Variable(var):
@@ -184,6 +185,31 @@ def beta(a: Arbre):
         a = beta_reduit
     return Variable('Nothing')
 
+
+def imprimeix_arbre(a: Arbre):
+     
+    graph = pydot.Dot('my_graph', graph_type='graph', bgcolor='white')
+
+    def visitador(arbre: Arbre, id):
+        match arbre:
+            case Abstraccio(variable, expressio):
+                graph.add_node(pydot.Node(id, label='λ'))
+                graph.add_node(pydot.Node(id+'v', label=str(to_string(variable))))
+                graph.add_edge(pydot.Edge(id, id+'v'))
+                visitador(expressio, id + 'a')
+                graph.add_edge(pydot.Edge(id, id+'a'))
+            case Aplicacio(esquerra, dreta):
+                graph.add_node(pydot.Node(id, label='@'))
+                visitador(esquerra, id + '1')
+                visitador(dreta, id + '2')
+                graph.add_edge(pydot.Edge(id, id+'1'))
+                graph.add_edge(pydot.Edge(id, id+'2'))
+            case Variable(var):
+                graph.add_node(pydot.Node(id, label=var))
+
+    visitador(a, 's')
+    graph.write_png('output.png')
+
 # Visitador de la gramàtica
 class TreeVisitor(lcVisitor):
 
@@ -251,12 +277,16 @@ async def tracta_expressio(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                 return
             case _:
                 await update.message.reply_text(to_string(arbre))
+                imprimeix_arbre(arbre)
+                await update.message.reply_photo(photo=open('output.png', 'rb'))
                 alpha_convertit = alpha(arbre)
                 beta_reduit = beta(alpha_convertit)
                 for s in steps:
                     await update.message.reply_text(s)
                 await update.message.reply_text(to_string(beta_reduit))
                 steps.clear()
+                imprimeix_arbre(beta_reduit)
+                await update.message.reply_photo(photo=open('output.png', 'rb'))
     else:
         print(parser.getNumberOfSyntaxErrors(), 'errors de sintaxi.')
         print(tree.toStringTree(recog=parser))
