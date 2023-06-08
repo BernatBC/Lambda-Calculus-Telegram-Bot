@@ -266,13 +266,22 @@ class TreeVisitor(lcVisitor):
         return Aplicacio(self.visit(terme1), self.visit(terme2))
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text(f'Hello {update.effective_user.first_name}')
+    name = update.effective_user.first_name
+    await update.message.reply_text('Welcome ' + name + '!')
+    await update.message.reply_text('Write /help to list the available commands')
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text('/start\n/author\n/help\n/macros\nλ-calculus expression')
+    await update.message.reply_text('/start     shows a welcome message\
+                                    \n/help     shows this message\
+                                    \n/author   author information \
+                                    \n/macros   shows list of macros\
+                                    \n/clear    clears list of macros\
+                                    \nλ-calculus expression')
 
 async def author(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text('λ-Calculus Bot\nBernat Borràs Civil, 2023\nTelegram/GitHub: @BernatBC')
+    await update.message.reply_text('λ-Calculus Bot\
+                                    \nBernat Borràs Civil, 2023\
+                                    \nTelegram/GitHub: @BernatBC')
 
 async def tracta_expressio(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     input_stream = InputStream(update.message.text)
@@ -307,16 +316,23 @@ async def llista_macros(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     message = ''
     for m in macros:
         message = message + '\n' + m + ' ≡ ' + to_string(macros[m])
+    if message == '':
+        message = 'The list of macros is empty\n'
     await update.message.reply_text(message)
+
+async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    macros.clear()
+    await update.message.reply_text('Macros have been cleared')
 
 TOKEN = open('token.txt').read().strip()
 
 app = ApplicationBuilder().token(TOKEN).build()
 
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("help", help))
 app.add_handler(CommandHandler("author", author))
+app.add_handler(CommandHandler("clear", clear))
+app.add_handler(CommandHandler("help", help))
 app.add_handler(CommandHandler("macros", llista_macros))
+app.add_handler(CommandHandler("start", start))
 app.add_handler(MessageHandler(filters.TEXT, tracta_expressio))
 
 app.run_polling()
