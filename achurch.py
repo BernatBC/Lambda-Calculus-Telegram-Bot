@@ -188,26 +188,38 @@ def beta(a: Arbre):
 
 def imprimeix_arbre(a: Arbre):
      
-    graph = pydot.Dot('my_graph', graph_type='graph', bgcolor='white')
+    graph = pydot.Dot('my_graph', graph_type='digraph', bgcolor='white')
 
     def visitador(arbre: Arbre, id):
         match arbre:
+            # Els nodes abstracció tindran l'id del seu paràmetre
             case Abstraccio(variable, expressio):
-                graph.add_node(pydot.Node(id, label='λ'))
-                graph.add_node(pydot.Node(id+'v', label=str(to_string(variable))))
-                graph.add_edge(pydot.Edge(id, id+'v'))
-                visitador(expressio, id + 'a')
-                graph.add_edge(pydot.Edge(id, id+'a'))
+                id_node = id + str(to_string(variable))
+                graph.add_node(pydot.Node(id_node, label='λ'+str(to_string(variable)),shape='none'))
+                id_fill = visitador(expressio, id_node)
+                graph.add_edge(pydot.Edge(id_node, id_fill,arrowsize=0.75))
+                return id_node
+            # Els nodes aplicació tindran l'id d'una @, i a més a més a cada fill se li afageix un número per distingir-los
             case Aplicacio(esquerra, dreta):
-                graph.add_node(pydot.Node(id, label='@'))
-                visitador(esquerra, id + '1')
-                visitador(dreta, id + '2')
-                graph.add_edge(pydot.Edge(id, id+'1'))
-                graph.add_edge(pydot.Edge(id, id+'2'))
+                id_node = id + '@'
+                graph.add_node(pydot.Node(id_node, label='@',shape='none'))
+                id_fill1 = visitador(esquerra, id_node + '1')
+                id_fill2 = visitador(dreta, id_node + '2')
+                graph.add_edge(pydot.Edge(id_node, id_fill1,arrowsize=0.75))
+                graph.add_edge(pydot.Edge(id_node, id_fill2,arrowsize=0.75))
+                return id_node
+            # Els nodes variable tindran l'id de -
             case Variable(var):
-                graph.add_node(pydot.Node(id, label=var))
+                id_node = id + '-'
+                graph.add_node(pydot.Node(id_node, label=var,shape='none'))
+                # Trobar variables lligades. Si tenen la variable a l'id, significa que hi ha una funció amb aquest paràmetre, i només ens cal agafar el seu node
+                if var in id:
+                    last_ocurrence = id.rfind(var) + 1
+                    id_parametre = id_node[:last_ocurrence]
+                    graph.add_edge(pydot.Edge(id_node, id_parametre,style='dotted', arrowsize=0.75))
+                return id_node
 
-    visitador(a, 's')
+    visitador(a, '')
     graph.write_png('output.png')
 
 # Visitador de la gramàtica
