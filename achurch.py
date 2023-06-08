@@ -301,12 +301,12 @@ async def tracta_expressio(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                 await update.message.reply_text(to_string(arbre))
                 imprimeix_arbre(arbre)
                 await update.message.reply_photo(photo=open('output.png', 'rb'))
+                steps.clear()
                 alpha_convertit = alpha(arbre)
                 beta_reduit = beta(alpha_convertit)
                 for s in steps:
                     await update.message.reply_text(s)
                 await update.message.reply_text(to_string(beta_reduit))
-                steps.clear()
                 imprimeix_arbre(beta_reduit)
                 await update.message.reply_photo(photo=open('output.png', 'rb'))
     else:
