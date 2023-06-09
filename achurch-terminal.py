@@ -180,8 +180,6 @@ def beta(a: Arbre):
             return original
         if (i > n_reduccions):
             return beta_reduit
-        if (to_string(a) == to_string(beta_reduit)):
-            return Variable('Nothing')
         a = beta_reduit
     return Variable('Nothing')
 

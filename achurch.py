@@ -183,7 +183,6 @@ def beta(a: Arbre):
         if (i > n_reduccions):
             return beta_reduit
         a = beta_reduit
-    print('limit')
     return Variable('Nothing')
 
 
