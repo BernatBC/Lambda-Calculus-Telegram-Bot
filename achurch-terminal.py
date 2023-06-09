@@ -18,7 +18,7 @@ class Aplicacio:
 
 @dataclass
 class Variable:
-    var: chr
+    var: str
 
 Arbre = Abstraccio | Aplicacio | Variable
 
@@ -123,11 +123,16 @@ def alpha(arbre: Arbre):
 
     # Retorna un nom de variable sense utilitzar, i el marca com a utilitzada
     def assignar_variable():
-        for v in range(ord('a'),ord('z')+1):
-            if chr(v) in utilitzades:
-                continue
-            utilitzades.add(chr(v))
-            return chr(v)
+        # Si ens quedem sense variables, afegim cometes al final de la variable
+        n_cometes = 0
+        while True:
+            for v in range(ord('a'),ord('z')+1):
+                variable = chr(v) + n_cometes*"'"
+                if variable in utilitzades:
+                    continue
+                utilitzades.add(variable)
+                return variable
+            n_cometes += 1
 
     variables_utilitzades(arbre)
     return alpha_conversio(arbre, set())[0]
