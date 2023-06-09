@@ -272,12 +272,27 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text('Write /help to list the available commands')
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text('/start     shows a welcome message\
-                                    \n/help     shows this message\
-                                    \n/author   author information \
-                                    \n/macros   shows list of macros\
-                                    \n/clear    clears list of macros\
-                                    \nλ-calculus expression')
+    await update.message.reply_text('/start - shows a welcome message\
+                                    \n/help - shows this message\
+                                    \n/author - author information \
+                                    \n/macros - shows list of macros\
+                                    \n/clear - clears list of macros\
+                                    \nλ-calculus expression\
+                                    \ndefine a macro')
+    await update.message.reply_text('Examples of λ-calculus expression:\
+                                    \nλx.y\
+                                    \nλxy.z\
+                                    \n(\y.x(yz))(ab)\
+                                    \n(λx.x((λz.zz)x))t\
+                                    \n\
+                                    \nnote that variables must be lowercase letters, expressions might contain macros')
+    await update.message.reply_text('Defining macros:\
+                                    \nMACRO_NAME=expression\
+                                    \nMACRO_NAME≡expression\
+                                    \n\
+                                    \nMACRO_NAME:\
+                                    \n -prefix macro → uppercase letters and numbers, first charachter must be an uppercase letter\
+                                    \n - infix macro → symbols such as +,-,*')
 
 async def author(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text('λ-Calculus Bot\
