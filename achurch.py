@@ -10,6 +10,7 @@ import math
 import pydot
 import sys
 
+
 # Definició de l'arbre d'una expressió
 @dataclass
 class Abstraccio:
@@ -19,6 +20,7 @@ class Abstraccio:
     var: Variable
     expr: Arbre
 
+
 @dataclass
 class Aplicacio:
     """Node aplicació
@@ -27,12 +29,14 @@ class Aplicacio:
     esq: Arbre
     dre: Arbre
 
+
 @dataclass
 class Variable:
     """Node variable
     """
 
     var: str
+
 
 # Definició d'arbre com a subclasse dels nodes definits
 Arbre = Abstraccio | Aplicacio | Variable
@@ -51,7 +55,7 @@ class TreeVisitor(lcVisitor):
         lcVisitor (lcVisitor): lcVisitador de la gramàtica
     """
 
-    def visitAssignacio(self, ctx:lcParser.AssignacioContext):
+    def visitAssignacio(self, ctx: lcParser.AssignacioContext):
         """Visitador de l'assignació d'una macro
 
         Args:
@@ -66,7 +70,7 @@ class TreeVisitor(lcVisitor):
         macros[variable] = self.visit(terme)
         return True
 
-    def visitParentesis(self, ctx:lcParser.ParentesisContext):
+    def visitParentesis(self, ctx: lcParser.ParentesisContext):
         """Visitador d'un terme entre parèntesis
 
         Args:
@@ -79,7 +83,7 @@ class TreeVisitor(lcVisitor):
         terme = ctx.getChild(1)
         return self.visit(terme)
 
-    def visitLletra(self, ctx:lcParser.LletraContext):
+    def visitLletra(self, ctx: lcParser.LletraContext):
         """Visitador d'una variable
 
         Args:
@@ -88,11 +92,11 @@ class TreeVisitor(lcVisitor):
         Returns:
             Variable: Variable del node
         """
-                
+
         lletra = str(ctx.getChild(0))
         return Variable(lletra)
 
-    def visitVariable(self, ctx:lcParser.VariableContext):
+    def visitVariable(self, ctx: lcParser.VariableContext):
         """Visitador d'una variable de macro
 
         Args:
@@ -105,7 +109,7 @@ class TreeVisitor(lcVisitor):
         variable = str(ctx.getChild(0))
         return macros[variable]
 
-    def visitAbstraccio(self, ctx:lcParser.AbstraccioContext):
+    def visitAbstraccio(self, ctx: lcParser.AbstraccioContext):
         """Visitador d'una abstracció.
 
         Args:
@@ -119,10 +123,11 @@ class TreeVisitor(lcVisitor):
         lletra = ctx.getChild(ctx.getChildCount() - 3)
         n = Abstraccio(Variable(lletra), self.visit(terme))
         # traducció abstracció de múltiples paràmetres
-        for i in range(ctx.getChildCount() - 4, 0, -1): n = Abstraccio(Variable(ctx.getChild(i)), n)
+        for i in range(ctx.getChildCount() - 4, 0, -1):
+            n = Abstraccio(Variable(ctx.getChild(i)), n)
         return n
 
-    def visitAplicacio(self, ctx:lcParser.AplicacioContext):
+    def visitAplicacio(self, ctx: lcParser.AplicacioContext):
         """Visitador d'una aplicació
 
         Args:
@@ -135,7 +140,7 @@ class TreeVisitor(lcVisitor):
         [terme1, terme2] = list(ctx.getChildren())
         x = str(terme2.getChild(0))
         # En el cas que es detecti una macro en notació infixa, convertir-la en notació prefixa
-        if (len(x) == 1 and not x.isalpha() and x != '(' and x != '\u005C' and x != 'λ'): 
+        if (len(x) == 1 and not x.isalpha() and x != '(' and x != '\u005C' and x != 'λ'):
             return Aplicacio(self.visit(terme2), self.visit(terme1))
         return Aplicacio(self.visit(terme1), self.visit(terme2))
 
@@ -250,7 +255,7 @@ def alpha(arbre: Arbre):
                 else:
                     lliures.add(var)
                 return (a, lliures, lligades)
-    
+
     def conversio(a: arbre, antiga, nova):
         """Substitueix els noms de les variables d'antiga a nove del arbre
 
@@ -288,7 +293,7 @@ def alpha(arbre: Arbre):
         # Si ens quedem sense variables, afegim cometes al final de la variable
         n_cometes = 0
         while True:
-            for v in range(ord('a'),ord('z')+1):
+            for v in range(ord('a'), ord('z')+1):
                 variable = chr(v) + n_cometes*"'"
                 if variable in utilitzades:
                     continue
@@ -365,10 +370,10 @@ def beta(a: Arbre):
                     return substitut
                 return arbre
 
-    # Bucle que fa les betes-reduccions possibles mentres no es superi un nombre determinat 
+    # Bucle que fa les betes-reduccions possibles mentres no es superi un nombre determinat
     original = a
     iterations = math.ceil(len(str(to_string(original)))/2)
-    for i in range(0,iterations):
+    for i in range(0, iterations):
         beta_reduit = beta_reduccio(a)
         if (n_reduccions == 0):
             return original
@@ -384,7 +389,7 @@ def genera_imatge(a: Arbre):
     Args:
         a (Arbre): Arbre a imprimir
     """
-     
+
     graph = pydot.Dot('my_graph', graph_type='digraph', bgcolor='white')
 
     # Visitador per generar la imatge
@@ -393,28 +398,28 @@ def genera_imatge(a: Arbre):
             # Els nodes abstracció tindran l'id del seu paràmetre
             case Abstraccio(variable, expressio):
                 id_node = id + str(to_string(variable))
-                graph.add_node(pydot.Node(id_node, label='λ'+str(to_string(variable)),shape='none'))
+                graph.add_node(pydot.Node(id_node, label='λ'+str(to_string(variable)), shape='none'))
                 id_fill = visitador(expressio, id_node)
-                graph.add_edge(pydot.Edge(id_node, id_fill,arrowsize=0.75))
+                graph.add_edge(pydot.Edge(id_node, id_fill, arrowsize=0.75))
                 return id_node
             # Els nodes aplicació tindran l'id d'una @, i a més a més a cada fill se li afageix un número per distingir-los
             case Aplicacio(esquerra, dreta):
                 id_node = id + '@'
-                graph.add_node(pydot.Node(id_node, label='@',shape='none'))
+                graph.add_node(pydot.Node(id_node, label='@', shape='none'))
                 id_fill1 = visitador(esquerra, id_node + '1')
                 id_fill2 = visitador(dreta, id_node + '2')
-                graph.add_edge(pydot.Edge(id_node, id_fill1,arrowsize=0.75))
-                graph.add_edge(pydot.Edge(id_node, id_fill2,arrowsize=0.75))
+                graph.add_edge(pydot.Edge(id_node, id_fill1, arrowsize=0.75))
+                graph.add_edge(pydot.Edge(id_node, id_fill2, arrowsize=0.75))
                 return id_node
             # Els nodes variable tindran l'id de -
             case Variable(var):
                 id_node = id + '-'
-                graph.add_node(pydot.Node(id_node, label=var,shape='none'))
+                graph.add_node(pydot.Node(id_node, label=var, shape='none'))
                 # Trobar variables lligades. Si tenen la variable a l'id, significa que hi ha una funció amb aquest paràmetre, i només ens cal agafar el seu node
                 if var in id:
                     last_ocurrence = id.rfind(var) + 1
                     id_parametre = id_node[:last_ocurrence]
-                    graph.add_edge(pydot.Edge(id_node, id_parametre,style='dotted', arrowsize=0.75))
+                    graph.add_edge(pydot.Edge(id_node, id_parametre, style='dotted', arrowsize=0.75))
                 return id_node
 
     visitador(a, '')
@@ -441,7 +446,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         update (Update): Actualització entrant
         context (ContextTypes.DEFAULT_TYPE): Context
     """
-        
+
     await update.message.reply_text('/start - shows a welcome message\
                                     \n/help - shows this message\
                                     \n/author - author information \
@@ -472,7 +477,7 @@ async def author(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         update (Update): Actualització entrant
         context (ContextTypes.DEFAULT_TYPE): Context
     """
-        
+
     await update.message.reply_text('λ-Calculus Bot\
                                     \nBernat Borràs Civil, 2023\
                                     \nTelegram/GitHub: @BernatBC')
@@ -485,7 +490,7 @@ async def tracta_expressio(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         update (Update): Actualització entrant
         context (ContextTypes.DEFAULT_TYPE): Context
     """
-        
+
     input_stream = InputStream(update.message.text)
     lexer = lcLexer(input_stream)
     token_stream = CommonTokenStream(lexer)
@@ -522,7 +527,7 @@ async def llista_macros(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         update (Update): Actualització entrant
         context (ContextTypes.DEFAULT_TYPE): Context
     """
-        
+
     message = ''
     for m in macros:
         message = message + '\n' + m + ' ≡ ' + to_string(macros[m])
@@ -538,7 +543,7 @@ async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         update (Update): Actualització entrant
         context (ContextTypes.DEFAULT_TYPE): Context
     """
-        
+
     macros.clear()
     await update.message.reply_text('Macros have been cleared')
 
