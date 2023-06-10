@@ -1,6 +1,6 @@
 # λ-Calculus Telegram Bot
 
-λ-Calculus Bot is a [Telegram](https://telegram.org/) bot based in a lambda-calculus interpreted creted by [Alonzo Church](https://en.wikipedia.org/wiki/Alonzo_Church).
+[@λ-Calculus Bot](https://t.me/lambda_calculus_bot) is a [Telegram](https://telegram.org/) bot based in a lambda-calculus interpreted creted by [Alonzo Church](https://en.wikipedia.org/wiki/Alonzo_Church).
 
 ## Features
 
@@ -63,15 +63,15 @@ Finally you can chat with the bot created.
 
 #### 1. Install dependencies
 The following dependencies are required:
-- python3
+- python3       version 3.7 or later
 - pip
 - antlr4
 
 After the installation of those packages, we'll install the following python packages:
 
 ```bash
-pip install antlr4-tools
-pip install antlr4-python3-runtime
+pip install antlr4-tools                # version 4.10 or later
+pip install antlr4-python3-runtime      # version 4.10 or later
 ```
 
 #### 2. Get source code
