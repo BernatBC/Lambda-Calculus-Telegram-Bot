@@ -29,21 +29,19 @@ The following dependencies are required:
 
 After the installation of those packages, we'll install the following python packages:
 
-´´´bash
+```bash
 pip install antlr4-tools                # version 4.10 or later
 pip install antlr4-python3-runtime      # version 4.10 or later
 pip install python-telegram-bot         # version 20.0 or later
 pip install pydot
-
-´´´
+```
 
 #### 2. Get source code
 To get the source code you can simmply download the zip file, or you can clone this repository by typing: 
 
-´´´bash
+```bash
 git clone https://github.com/BernatBC/Lambda-Calculus-Telegram-Bot.git
-
-´´´
+```
 
 #### 3. Setting up a Telegram Bot
 Message the Telegram account [@BotFather](https://t.me/botfather) and follow it's instructions to create your own bot.
@@ -55,10 +53,10 @@ For more information, please visit the [Telegram Bot Guide](https://core.telegra
 #### 4. Run locally
 From the repository directory, run the following command:
 
-´´´bash
+```bash
 python3 achurch.py
+```
 
-´´´
 Finally you can chat with the bot created.
 
 ### Method 3: Execute from terminal
@@ -71,23 +69,21 @@ The following dependencies are required:
 
 After the installation of those packages, we'll install the following python packages:
 
-´´´bash
+```bash
 pip install antlr4-tools
 pip install antlr4-python3-runtime
-
-´´´
+```
 
 #### 2. Get source code
-To get the source code you can simmply download the zip file, or you can clone this repository by typing: 
-´´´bash
-git clone https://github.com/BernatBC/Lambda-Calculus-Telegram-Bot.git
+To get the source code you can simmply download the zip file, or you can clone this repository by typing:
 
-´´´
+```bash
+git clone https://github.com/BernatBC/Lambda-Calculus-Telegram-Bot.git
+```
 
 #### 3. Run locally
 Finally, from the repository directory, run the following command:
 
-´´´bash
+```bash
 python3 achurch.py terminal
-
-´´´
+```
