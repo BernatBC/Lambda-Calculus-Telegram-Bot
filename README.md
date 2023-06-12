@@ -1,6 +1,6 @@
 # λ-Calculus Telegram Bot
 
-[@λ-Calculus Bot](https://t.me/lambda_calculus_bot) is a [Telegram](https://telegram.org/) bot based in a lambda-calculus interpreted creted by [Alonzo Church](https://en.wikipedia.org/wiki/Alonzo_Church).
+[@λ-Calculus Bot](https://t.me/lambda_calculus_bot) is a [Telegram](https://telegram.org/) bot based in a lambda-calculus interpreter creted by [Alonzo Church](https://en.wikipedia.org/wiki/Alonzo_Church).
 
 ## Features
 
