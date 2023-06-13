@@ -15,7 +15,7 @@
 
 You'll need to have telegram installed and an account. For more information, please visit [telegram.org](https://telegram.org/).
 
-You can access the bot through the [@λ-Calculus Bot](https://t.me/lambda_calculus_bot) account.
+You can access the bot through the [@lambda_calculus_bot](https://t.me/lambda_calculus_bot) account.
 
 ### Method 2: Build own telegram bot
 
